@@ -1,24 +1,25 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
+const Sequelize = require("sequelize");
 // const dotenv = require("dotenv");
 
 const app = express();
 
-// dotenv.config();
-// const MYSQL_URL =;
-
-const connection = mysql.createConnection({
+var connection = new Sequelize("groupomania", "root", "@Canberra888", {
   host: "localhost",
-  user: "root",
-  database: "groupomania",
+  dialect: "mysql",
 });
+// dotenv.config();
+// var sequelize = new Sequelize(
+//   "postgres://root:@Canberra888@localhost:3306/groupomania"
+// );
 
 app.use(bodyParser.json());
 
-app.use("/images", express.static(path.join(__dirname.anchor, "images")));
+// app.use("/images", express.static(path.join(__dirname.anchor, "images")));
 
-app.use("/api/auth", userRoutes);
-app.use("/api/posts", postRoute);
+// app.use("/api/auth", userRoutes);
+// app.use("/api/posts", postRoute);
 
 module.exports = app;

@@ -2,8 +2,10 @@ const express = require("express"); //Express is for the framework building the 
 const cors = require("cors"); //cors provides Express middleware to enable CORS with various options.
 
 const app = express(); //create an Express app, then add body-parser (json and urlencoded) and cors middlewares using app.use() method.
-
+const auth = require("./middleware/auth");
 const postRoute = require("./routes/post");
+const userRoute = require("./routes/user");
+
 var corsOptions = {
   origin: "http://localhost:8081",
 };
@@ -18,8 +20,11 @@ app.use(express.urlencoded({ extended: true }));
 const db = require("./models");
 const controller = require("./controllers/post");
 
-db.sequelize.sync().then(() => {});
+db.sequelize.sync({ force: false }).then(() => {
+  // console.log("Drop and re-sync db.");
+});
 
-app.use("/api/posts", postRoute);
+app.use("/api/posts", auth, postRoute);
+app.use("/api/users", userRoute);
 
 module.exports = app;

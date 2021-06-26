@@ -1,10 +1,12 @@
 const bodyParser = require("body-parser");
 const app = require("../app");
+const { posts } = require("../models");
 const db = require("../models");
 const { post } = require("../routes/post");
 const Post = db.posts;
 const Comment = db.comments;
 const Op = db.Sequelize.Op;
+const jwt = require("jsonwebtoken");
 
 // app.use(bodyParser.json());
 
@@ -85,6 +87,19 @@ exports.findComments = (req, res) => {
     });
 };
 
+// find Unread posts
+// exports.findUnreadPost = (req, res, next) => {
+//   const id = req.params.id;
+//   Post.findByPk(id, { include: ["posts"] }).then((post) => {
+//     if (!post.visited.includes(user.id)) {
+//       post.visited.push(user.id);
+//       console.log("read posts");
+//     } else {
+//       console.log("There is no new posts.");
+//     }
+//   });
+// };
+
 // Find a single Post with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
@@ -95,10 +110,26 @@ exports.findOne = (req, res) => {
           message: "Post is not found",
         });
       } else {
+        const token = req.headers.authorization.split(" ")[1];
+        const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+        const userId = decodedToken.userId;
+        console.log(userId);
+        if (
+          data.visited != null &&
+          !Object.values(data.visited).includes(userId)
+        ) {
+          data.visited[userId] = userId;
+          Post.update(req.body.post, {
+            where: { id: id },
+          });
+          console.log("update visited posts");
+        }
+
         res.send(data);
       }
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).send({
         message: "Error retrieving Post with id=" + id,
       });

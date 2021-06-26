@@ -6,6 +6,9 @@ module.exports = (sequelize, Sequelize) => {
     content: {
       type: Sequelize.STRING,
     },
+    visited: {
+      type: Sequelize.JSON,
+    },
   });
 
   return Post;

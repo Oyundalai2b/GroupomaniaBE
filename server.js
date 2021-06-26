@@ -2,6 +2,7 @@ const http = require("http");
 const app = require("./app");
 const dotenv = require("dotenv");
 dotenv.config();
+
 /* the  normalizePort  function returns a valid port, whether it is provided as a number or a string */
 const normalizePort = (val) => {
   const port = parseInt(val, 10);

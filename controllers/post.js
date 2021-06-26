@@ -1,6 +1,7 @@
 const bodyParser = require("body-parser");
 const app = require("../app");
 const db = require("../models");
+const { post } = require("../routes/post");
 const Post = db.posts;
 const Comment = db.comments;
 const Op = db.Sequelize.Op;
@@ -11,7 +12,7 @@ const Op = db.Sequelize.Op;
 exports.createPost = (req, res, next) => {
   const post = new Post({
     title: req.body.post.title,
-    content: req.body.tutorial.content,
+    content: req.body.post.content,
   });
   post
     .save()
@@ -30,7 +31,7 @@ exports.createPost = (req, res, next) => {
 //Create and Save new Comment
 exports.createComment = (postId, comment) => {
   return Comment.create({
-    userName: comment.username,
+    userName: comment.userName,
     text: comment.text,
     postId: postId,
   })
@@ -57,6 +58,32 @@ exports.findAll = (req, res) => {
     });
 };
 
+//retrieve all comments from  a post
+exports.findComments = (req, res) => {
+  const id = req.params.id;
+  Post.findByPk(id)
+    .then((data) => {
+      if (data === null) {
+        res.status(500).send({
+          message: "Post is not found",
+        });
+      } else {
+        if (data.comments === null) {
+          res.send({
+            message: "Post does not have any comments",
+          });
+        } else {
+          res.send(data.comments);
+        }
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error retrieving Post with id=" + id,
+      });
+    });
+};
+
 // Find a single Post with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
@@ -64,7 +91,7 @@ exports.findOne = (req, res) => {
     .then((data) => {
       if (data === null) {
         res.status(500).send({
-          message: "Tutorial is not found",
+          message: "Post is not found",
         });
       } else {
         res.send(data);
@@ -72,7 +99,7 @@ exports.findOne = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message: "Error retrieving Tutorial with id=" + id,
+        message: "Error retrieving Post with id=" + id,
       });
     });
 };
@@ -125,17 +152,17 @@ exports.delete = (req, res) => {
     .then((num) => {
       if (num == 1) {
         res.send({
-          message: "Tutorial was deleted successfully!",
+          message: "Post was deleted successfully!",
         });
       } else {
         res.send({
-          message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+          message: `Cannot delete Post with id=${id}. Maybe Post was not found!`,
         });
       }
     })
     .catch((err) => {
       res.status(500).send({
-        message: "Could not delete Tutorial with id=" + id,
+        message: "Could not delete Post with id=" + id,
       });
     });
 };

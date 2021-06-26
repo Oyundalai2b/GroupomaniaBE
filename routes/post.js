@@ -8,6 +8,8 @@ router.post("/", posts.createPost);
 //Create and Save new Comment
 router.post("/:id/comments/", posts.createComment);
 
+router.get("/:id/comments/", posts.findComments);
+
 // Retrieve all posts
 router.get("/", posts.findAll);
 

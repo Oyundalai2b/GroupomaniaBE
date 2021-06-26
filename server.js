@@ -1,6 +1,7 @@
 const http = require("http");
 const app = require("./app");
-
+const dotenv = require("dotenv");
+dotenv.config();
 /* the  normalizePort  function returns a valid port, whether it is provided as a number or a string */
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -13,7 +14,7 @@ const normalizePort = (val) => {
   }
   return false;
 };
-const port = normalizePort(process.env.PORT || "3000");
+const port = normalizePort(process.env.PORT || "8080");
 app.set("port", port);
 
 // the errorHandler function checks for various errors and handles them appropriately — it is then registered to the server

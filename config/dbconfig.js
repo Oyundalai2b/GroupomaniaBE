@@ -1,9 +1,12 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 module.exports = {
-  HOST: "localhost",
-  USER: "root",
-  PASSWORD: "pass",
-  DB: "project7",
-  dialect: "mysql",
+  HOST: process.env.MYSQL_HOST,
+  USER: process.env.MYSQL_USER,
+  PASSWORD: process.env.MYSQL_PASSWORD,
+  DB: process.env.MYSQL_DB,
+  dialect: process.env.DB_DIALECT,
   pool: {
     max: 5, //maximum number of connection in pool
     min: 0, //minimum number of connection in pool

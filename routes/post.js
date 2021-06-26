@@ -6,9 +6,9 @@ var router = require("express").Router();
 router.post("/", posts.createPost);
 
 //Create and Save new Comment
-router.post("/:id/comments/", posts.createComment);
+router.post("/:id/comments", posts.createComment);
 
-router.get("/:id/comments/", posts.findComments);
+router.get("/:id/comments", posts.findComments);
 
 // Retrieve all posts
 router.get("/", posts.findAll);

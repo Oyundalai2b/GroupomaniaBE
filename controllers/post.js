@@ -61,7 +61,7 @@ exports.findAll = (req, res) => {
 //retrieve all comments from  a post
 exports.findComments = (req, res) => {
   const id = req.params.id;
-  Post.findByPk(id)
+  Post.findByPk(id, { include: ["comments"] })
     .then((data) => {
       if (data === null) {
         res.status(500).send({
@@ -69,6 +69,7 @@ exports.findComments = (req, res) => {
         });
       } else {
         if (data.comments === null) {
+          console.log("doesnt have comments");
           res.send({
             message: "Post does not have any comments",
           });

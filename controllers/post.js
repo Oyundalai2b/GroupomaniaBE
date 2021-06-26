@@ -1,22 +1,23 @@
-const Post = require("../models/post");
-const fs = require("fs");
+const bodyParser = require("body-parser");
+const app = require("../app");
+const db = require("../models");
+const Post = db.posts;
+const Comment = db.comments;
+const Op = db.Sequelize.Op;
 
+// app.use(bodyParser.json());
+
+// Create and Save a new Post
 exports.createPost = (req, res, next) => {
-  const url = req.protocol + "://" + req.get("host");
-  req.body.post = JSON.parse(req.body.post);
   const post = new Post({
-    userId: req.body.post.userId,
-    post_title: req.body.post.post_title,
-    post_content: req.body.post_content,
-    post_image: req.body.post_image,
-    post_date: req.body.post_date,
-    post_time: req.body.post_time,
+    title: req.body.post.title,
+    content: req.body.tutorial.content,
   });
   post
     .save()
     .then(() => {
       res.status(201).json({
-        message: "Post save successfully",
+        message: "Post saved successfully",
       });
     })
     .catch((error) => {
@@ -26,85 +27,115 @@ exports.createPost = (req, res, next) => {
     });
 };
 
-exports.getOnePost = (req, res, next) => {
-  Sauce.findOne({
-    _id: req.params.id,
+//Create and Save new Comment
+exports.createComment = (postId, comment) => {
+  return Comment.create({
+    userName: comment.username,
+    text: comment.text,
+    postId: postId,
   })
-    .then((sauce) => {
-      res.status(200).json(post);
+    .then((comment) => {
+      console.log(">> Created comment: " + JSON.stringify(comment, null, 4));
+      return comment;
     })
-    .catch((error) => {
-      res.status(404).json({
-        error: error,
+    .catch((err) => {
+      console.log(">> Error while creating comment: ", err);
+    });
+};
+
+// Retrieve all Posts from the database.
+exports.findAll = (req, res) => {
+  Post.findAll({ include: ["comments"] })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving tutorials.",
       });
     });
 };
 
-exports.modifyingPost = (req, res, next) => {
-  let post = new Post({ _id: req.params._id });
-  if (req.file) {
-    const url = req.protocol + "://" + req.get("host");
-    req.body.post = JSON.parse(req.body.post);
-    post = {
-      _id: req.params.id,
-      userId: req.body.post.userId,
-      post_title: req.body.post.post_title,
-      post_content: req.body.post_content,
-      imageUrl: url + "/images/" + req.file.filename,
-      post_date: req.body.post_date,
-      post_time: req.body.post_time,
-    };
-  } else {
-    post = {
-      _id: req.params.id,
-      userId: req.body.post.userId,
-      post_title: req.body.post.post_title,
-      post_content: req.body.post_content,
-      post_date: req.body.post_date,
-      post_time: req.body.post_time,
-    };
-  }
-
-  Post.updateOne({ _id: req.params.id }, post)
-    .then(() => {
-      res.status(201).json({
-        message: "Post updated successfully!",
-      });
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
-    });
-};
-
-exports.deletePost = (req, res, next) => {
-  Post.findOne({ _id: req.params.id }).then((post) => {
-    const filename = post.imageUrl.split("/images/")[1];
-    fs.unlink("images/" + filename, () => {
-      Post.deleteOne({ _id: req.params.id })
-        .then(() => {
-          res.status(200).json({
-            message: "Post deleted!",
-          });
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error: error,
-          });
+// Find a single Post with an id
+exports.findOne = (req, res) => {
+  const id = req.params.id;
+  Post.findByPk(id)
+    .then((data) => {
+      if (data === null) {
+        res.status(500).send({
+          message: "Tutorial is not found",
         });
+      } else {
+        res.send(data);
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error retrieving Tutorial with id=" + id,
+      });
     });
-  });
 };
 
-exports.getAllSauce = (req, res, next) => {
-  Post.find()
-    .then((posts) => {
-      res.status(200).json(posts);
+//Get the comments for a given comment id
+exports.findCommentById = (req, res) => {
+  const id = req.params.id;
+  Comment.findByPk(id, { include: ["post"] })
+    .then((comment) => {
+      res.send(comment);
     })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
+    .catch((err) => {
+      res.status(500).send({
+        message: ">> Error while finding comment:" + id,
+      });
+    });
+};
+
+// Update a Post by the id in the request
+exports.update = (req, res) => {
+  const id = req.params.id;
+  Post.update(req.body.post, {
+    where: { id: id },
+  })
+    .then((num) => {
+      if (num == 1) {
+        res.send({
+          message: "Tutorial was updated successfully.",
+        });
+      } else {
+        res.send({
+          message: `Cannot update Post with id=${id}. Maybe Post was not found or req.body is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error updating Tutorial with id=" + id,
+      });
+    });
+};
+
+// Delete a Post with the specified id in the request
+exports.delete = (req, res) => {
+  const id = req.params.id;
+
+  Post.destroy({
+    where: { id: id },
+  })
+    .then((num) => {
+      if (num == 1) {
+        res.send({
+          message: "Tutorial was deleted successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Could not delete Tutorial with id=" + id,
       });
     });
 };

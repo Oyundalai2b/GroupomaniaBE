@@ -1,41 +1,18 @@
-const Sequelize = require("sequelize");
-
-var user = connection.define(
-  "users",
-  {
-    userId: {
-      type: Sequelize.UUID,
-      primaryKey: true,
-      defaultValue: Sequelize.UUIDV4,
-      field: "id",
-    },
-    userName: {
-      type: Sequelize.STRING,
-      field: "user_name",
-    },
-    email: {
-      type: Sequelize.STRING,
-      field: "user_email",
+module.exports = (sequelize, DataTypes) => {
+  const User = sequelize.define("user", {
+    Name: {
+      type: DataTypes.STRING,
     },
     password: {
-      type: Sequelize.STRING,
-      field: "user_password",
+      type: DataTypes.STRING,
+    },
+    email: {
+      type: DataTypes.STRING,
     },
     bio: {
-      type: Sequelize.STRING,
-      field: "user_bio",
+      type: DataTypes.STRING,
     },
-  },
-  {
-    freezeUsers: true,
-  }
-);
-
-users.sync({ force: true }).then(function () {
-  return user.Create({
-    userName: "oggy",
-    email: "ok@ok.com",
-    password: "okokok",
-    bio: "okokok",
   });
-});
+
+  return User;
+};

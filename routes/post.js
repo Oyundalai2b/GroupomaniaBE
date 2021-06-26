@@ -1,14 +1,26 @@
-const express = require("express");
-const router = express.Router();
+const posts = require("../controllers/post");
 
-const auth = require("../middleware/auth");
+var router = require("express").Router();
 
-const postCtrl = require("../controllers/post");
+// Create a new Post
+router.post("/", posts.createPost);
 
-router.get("/", auth, postCtrl.getAllPost);
-router.get("/:id", auth, postCtrl.getOnePost);
-router.post("/", auth, postCtrl.createPost);
-router.put("/:id", auth, postCtrl.modifyingPost);
-router.delete("/:id", auth, postCtrl.deletePost);
+//Create and Save new Comment
+router.post("/:id/comments/", posts.createComment);
 
-module.export = router;
+// Retrieve all posts
+router.get("/", posts.findAll);
+
+// Retrieve a single Post with id
+router.get("/:id", posts.findOne);
+
+//Get the comments for a given comment id
+router.get("/comments/:id", posts.findCommentById);
+
+// Update a Post with id
+router.put("/:id", posts.update);
+
+// Delete a Post with id
+router.delete("/:id", posts.delete);
+
+module.exports = router;

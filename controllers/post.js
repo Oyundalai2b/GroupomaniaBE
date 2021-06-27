@@ -12,9 +12,13 @@ const jwt = require("jsonwebtoken");
 
 // Create and Save a new Post
 exports.createPost = (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = decodedToken.userId;
   const post = new Post({
     title: req.body.post.title,
     content: req.body.post.content,
+    userId: userId,
   });
   post
     .save()
@@ -112,20 +116,27 @@ exports.findOne = (req, res) => {
       } else {
         const token = req.headers.authorization.split(" ")[1];
         const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
-        const userId = decodedToken.userId;
-        console.log(userId);
-        if (
-          data.visited != null &&
-          !Object.values(data.visited).includes(userId)
-        ) {
+        const userId = parseInt(decodedToken.userId);
+
+        if (data.visited == null) {
+          data.visited = {};
           data.visited[userId] = userId;
-          Post.update(req.body.post, {
-            where: { id: id },
-          });
-          console.log("update visited posts");
+          console.log("update visited posts first time");
+        } else if (!Object.values(data.visited).includes(userId)) {
+          data.visited[userId] = userId;
+
+          console.log("update visited posts second time");
         }
 
-        res.send(data);
+        Post.update({ visited: data.visited }, { where: { id: id } })
+          .then((num) => {
+            res.send(data);
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: "Error updating Post with id=" + id,
+            });
+          });
       }
     })
     .catch((err) => {
@@ -159,7 +170,7 @@ exports.update = (req, res) => {
     .then((num) => {
       if (num == 1) {
         res.send({
-          message: "Tutorial was updated successfully.",
+          message: "Post was updated successfully.",
         });
       } else {
         res.send({
@@ -169,7 +180,7 @@ exports.update = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message: "Error updating Tutorial with id=" + id,
+        message: "Error updating Post with id=" + id,
       });
     });
 };

@@ -37,7 +37,8 @@ exports.signup = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
-  User.findOne({ email: req.body.email })
+  console.log(req.body);
+  User.findOne({ where: { email: req.body.email } })
     .then((user) => {
       if (!user) {
         return res.status(401).json({
@@ -52,11 +53,12 @@ exports.login = (req, res, next) => {
               error: new Error("Incorrect password!"),
             });
           }
-          const token = jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
+          const token = jwt.sign({ userId: user.id }, "RANDOM_TOKEN_SECRET", {
             expiresIn: "24h",
           });
+          // console.log(user);
           res.status(200).json({
-            userId: user._id,
+            userId: user.id,
             token: token,
           });
         })

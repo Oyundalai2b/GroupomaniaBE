@@ -1,8 +1,7 @@
 const bodyParser = require("body-parser");
 const app = require("../app");
-const { posts } = require("../models");
 const db = require("../models");
-const { post } = require("../routes/post");
+
 const Post = db.posts;
 const Comment = db.comments;
 const Op = db.Sequelize.Op;
@@ -12,12 +11,16 @@ const jwt = require("jsonwebtoken");
 
 // Create and Save a new Post
 exports.createPost = (req, res, next) => {
+  const url = req.protocol + "://" + req.get("host");
+  req.body.post = JSON.parse(req.body.post);
+
   const token = req.headers.authorization.split(" ")[1];
   const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
   const userId = decodedToken.userId;
   const post = new Post({
     title: req.body.post.title,
     content: req.body.post.content,
+    imgURL: url + "/images/" + req.file.filename,
     userId: userId,
   });
   post
@@ -51,7 +54,7 @@ exports.createComment = (postId, comment) => {
 };
 
 // Retrieve all Posts from the database.
-exports.findAll = (req, res) => {
+exports.findAllPosts = (req, res) => {
   Post.findAll({ include: ["comments"] })
     .then((data) => {
       res.send(data);
@@ -91,21 +94,8 @@ exports.findComments = (req, res) => {
     });
 };
 
-// find Unread posts
-// exports.findUnreadPost = (req, res, next) => {
-//   const id = req.params.id;
-//   Post.findByPk(id, { include: ["posts"] }).then((post) => {
-//     if (!post.visited.includes(user.id)) {
-//       post.visited.push(user.id);
-//       console.log("read posts");
-//     } else {
-//       console.log("There is no new posts.");
-//     }
-//   });
-// };
-
 // Find a single Post with an id
-exports.findOne = (req, res) => {
+exports.findOnePost = (req, res) => {
   const id = req.params.id;
   Post.findByPk(id)
     .then((data) => {
@@ -161,32 +151,81 @@ exports.findCommentById = (req, res) => {
     });
 };
 
-// Update a Post by the id in the request
-exports.update = (req, res) => {
+exports.update = (req, res, next) => {
   const id = req.params.id;
-  Post.update(req.body.post, {
-    where: { id: id },
-  })
-    .then((num) => {
-      if (num == 1) {
-        res.send({
-          message: "Post was updated successfully.",
-        });
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+  Post.findByPk(id)
+    .then((data) => {
+      if (userId == data.userId) {
+        if (req.file) {
+          const url = req.protocol + "://" + req.get("host");
+          req.body.post = JSON.parse(req.body.post);
+          req.body.post.imgURL = url + "/images/" + req.file.filename;
+
+          console.log(req.body);
+        }
+
+        Post.update(req.body.post, {
+          where: { id: id },
+        })
+          .then((num) => {
+            if (num == 1) {
+              res.send({
+                message: "Post was updated successfully.",
+              });
+            } else {
+              res.send({
+                message: `Cannot update Post with id=${id}. Maybe Post was not found or req.body is empty!`,
+              });
+            }
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: "Error updating Post with id=" + id,
+            });
+          });
       } else {
-        res.send({
-          message: `Cannot update Post with id=${id}. Maybe Post was not found or req.body is empty!`,
+        res.status(500).send({
+          message: "You cannot modify someone's post",
         });
       }
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).send({
-        message: "Error updating Post with id=" + id,
+        message: "Error retrieving Post with id=" + id,
       });
     });
 };
 
+// Update a Post by the id in the request
+// exports.update = (req, res) => {
+//   const id = req.params.id;
+//   Post.update(req.body.post, {
+//     where: { id: id },
+//   })
+//     .then((num) => {
+//       if (num == 1) {
+//         res.send({
+//           message: "Post was updated successfully.",
+//         });
+//       } else {
+//         res.send({
+//           message: `Cannot update Post with id=${id}. Maybe Post was not found or req.body is empty!`,
+//         });
+//       }
+//     })
+//     .catch((err) => {
+//       res.status(500).send({
+//         message: "Error updating Post with id=" + id,
+//       });
+//     });
+// };
+
 // Delete a Post with the specified id in the request
-exports.delete = (req, res) => {
+exports.deletePost = (req, res) => {
   const id = req.params.id;
 
   Post.destroy({

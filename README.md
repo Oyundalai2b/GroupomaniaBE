@@ -9,15 +9,18 @@ Clone this repo, run the following command:
 
 Create `.env` file and create following environment variables:
 ```
-MONGODB_USER=YOUR_MONGODB_USER
-MONGODB_PASSWORD=YOUR_MONGODB_PASSWORD
-MONGODB_HOST=YOUR_MONGODB_HOST
-MONGODB_DB=YOUR_MONGODB_DATABASE
+MYSQL_USER=root
+MYSQL_PASSWORD=pass
+MYSQL_HOST=localhost
+MYSQL_DB=project7
+DB_DIALECT=mysql
+PORT=8080
+
 ```
 
 
 ## Usage ##
 
-Run `npm start`. This should both run the local server and launch your browser.
+Run `npm run start`. This should both run the local server and launch your browser.
 
 Use `Ctrl+C` in the terminal to stop the local server.

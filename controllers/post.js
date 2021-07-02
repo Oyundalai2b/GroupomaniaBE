@@ -11,16 +11,24 @@ const jwt = require("jsonwebtoken");
 
 // Create and Save a new Post
 exports.createPost = (req, res, next) => {
-  const url = req.protocol + "://" + req.get("host");
-  req.body.post = JSON.parse(req.body.post);
+  req.body.post.imgURL = null;
+
+  if (req.file) {
+    const url = req.protocol + "://" + req.get("host");
+    console.log(req.body);
+    req.body.post = JSON.parse(req.body.post);
+
+    req.body.post.imgURL = url + "/images/" + req.file.filename;
+  }
 
   const token = req.headers.authorization.split(" ")[1];
   const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
   const userId = decodedToken.userId;
+
   const post = new Post({
     title: req.body.post.title,
     content: req.body.post.content,
-    imgURL: url + "/images/" + req.file.filename,
+    imgURL: req.body.post.imgURL,
     userId: userId,
   });
   post
@@ -163,7 +171,6 @@ exports.update = (req, res, next) => {
           const url = req.protocol + "://" + req.get("host");
           req.body.post = JSON.parse(req.body.post);
           req.body.post.imgURL = url + "/images/" + req.file.filename;
-
           console.log(req.body);
         }
 

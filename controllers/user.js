@@ -37,7 +37,6 @@ exports.signup = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
-  console.log(req.body);
   User.findOne({ where: { email: req.body.email } })
     .then((user) => {
       if (!user) {
@@ -71,6 +70,137 @@ exports.login = (req, res, next) => {
     .catch((error) => {
       res.status(500).json({
         error: error,
+      });
+    });
+};
+
+exports.getProfile = (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+  User.findByPk(userId)
+    .then((loggedinUser) => {
+      res.send(loggedinUser);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Cannot find profile",
+      });
+    });
+};
+
+exports.updateProfile = (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+  User.findByPk(userId)
+    .then((loggedinUser) => {
+      User.update(req.body, {
+        where: { id: userId },
+      })
+        .then((num) => {
+          if (num == 1) {
+            res.send({
+              message: "Profile updated successfully",
+            });
+          } else {
+            res.send({
+              message: "Unsuccessful update request",
+            });
+          }
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message: "Error!!",
+          });
+        });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "error!!",
+      });
+    });
+};
+
+exports.changePassword = (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+
+  User.findByPk(userId)
+    .then((loggedinUser) => {
+      bcrypt
+        .compare(req.body.password, loggedinUser.password)
+        .then((valid) => {
+          if (valid) {
+            if (req.body.newPassword === req.body.confirmPassword) {
+              bcrypt.genSalt(saltRounds, function (err, salt) {
+                bcrypt.hash(req.body.newPassword, salt).then((newHash) => {
+                  User.update({ password: newHash }, { where: { id: userId } })
+                    .then((num) => {
+                      if (num == 1) {
+                        res.send({
+                          message: "Password changed successfully.",
+                        });
+                      } else {
+                        res.send({
+                          message: "Cannot update password",
+                        });
+                      }
+                    })
+                    .catch((err) => {
+                      res.status(500).send({
+                        message: "Error on change password!!",
+                      });
+                    });
+                });
+              });
+            } else {
+              res.status(500).json({
+                message: "Your new passwords do not match!",
+              });
+            }
+          } else {
+            res.status(500).json({
+              message: "Your current password is incorrect",
+            });
+          }
+        })
+        .catch((error) => {
+          res.status(500).json({
+            error: error,
+          });
+        });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "error!!",
+      });
+    });
+};
+
+exports.deleteProfile = (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+
+  User.destroy({
+    where: { id: userId },
+  })
+    .then((num) => {
+      if (num == 1) {
+        res.send({
+          message: "Profile was deleted successfully!",
+        });
+      } else {
+        res.send({
+          message: "Cannot delete Profile",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Could not delete Profile",
       });
     });
 };

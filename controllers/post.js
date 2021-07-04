@@ -61,11 +61,24 @@ exports.createComment = (postId, comment) => {
     });
 };
 
-// Retrieve all Posts from the database.
 exports.findAllPosts = (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const userId = parseInt(decodedToken.userId);
+
   Post.findAll({ include: ["comments"] })
-    .then((data) => {
-      res.send(data);
+    .then((posts) => {
+      posts.forEach((post) => {
+        if (post.visited == null) {
+          post.dataValues.isRead = false;
+        } else if (!Object.values(post.visited).includes(userId)) {
+          post.dataValues.isRead = false;
+        } else {
+          post.dataValues.isRead = true;
+        }
+        console.log(post);
+      });
+      res.send(posts);
     })
     .catch((err) => {
       res.status(500).send({
@@ -255,3 +268,27 @@ exports.deletePost = (req, res) => {
       });
     });
 };
+
+// exports.isRead = (req, res) => {
+//   const token = req.headers.authorization.split(" ")[1];
+//   const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+//   const userId = decodedToken.userId;
+
+//   const postId = req.params.id;
+//   Post.findByPk(postId)
+//     .then((post) => {
+//       if (post.visited == null) {
+//         res.send({ isRead: false });
+//       } else if (!Object.values(post.visited).includes(userId)) {
+//         res.send({ isRead: false });
+//       } else {
+//         res.send({ isRead: true });
+//       }
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//       res.status(500).send({
+//         message: "Error while finding post:",
+//       });
+//     });
+// };

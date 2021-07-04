@@ -17,6 +17,8 @@ router.get("/", posts.findAllPosts);
 // Retrieve a single Post with id
 router.get("/:id", posts.findOnePost);
 
+// router.get("/:id/is-read", posts.isRead);
+
 //Get the comments for a given comment id
 router.get("/comments/:id", posts.findCommentById);
 

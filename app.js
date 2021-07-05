@@ -8,7 +8,7 @@ const postRoute = require("./routes/post");
 const userRoute = require("./routes/user");
 
 var corsOptions = {
-  origin: "http://localhost:8080",
+  origin: "*",
 };
 
 app.use(cors(corsOptions));

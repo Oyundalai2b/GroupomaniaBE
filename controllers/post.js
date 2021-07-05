@@ -3,6 +3,7 @@ const app = require("../app");
 const db = require("../models");
 
 const Post = db.posts;
+const User = db.users;
 const Comment = db.comments;
 const Op = db.Sequelize.Op;
 const jwt = require("jsonwebtoken");
@@ -66,7 +67,7 @@ exports.findAllPosts = (req, res) => {
   const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
   const userId = parseInt(decodedToken.userId);
 
-  Post.findAll({ include: ["comments"] })
+  Post.findAll({ include: [{ model: User, attributes: ["name"], as: "user" }] })
     .then((posts) => {
       posts.forEach((post) => {
         if (post.visited == null) {

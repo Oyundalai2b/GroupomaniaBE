@@ -1,8 +1,12 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 var validator = require("email-validator");
+const dotenv = require("dotenv");
+
 const db = require("../models");
 const User = db.users;
+
+dotenv.config();
 
 const saltRounds = 10;
 
@@ -52,9 +56,13 @@ exports.login = (req, res, next) => {
               error: new Error("Incorrect password!"),
             });
           }
-          const token = jwt.sign({ userId: user.id }, "RANDOM_TOKEN_SECRET", {
-            expiresIn: "24h",
-          });
+          const token = jwt.sign(
+            { userId: user.id },
+            process.env.RANDOM_TOKEN_SECRET,
+            {
+              expiresIn: "24h",
+            }
+          );
           // console.log(user);
           res.status(200).json({
             userId: user.id,
@@ -76,7 +84,7 @@ exports.login = (req, res, next) => {
 
 exports.getProfile = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
   User.findByPk(userId)
     .then((loggedinUser) => {
@@ -91,7 +99,7 @@ exports.getProfile = (req, res, next) => {
 
 exports.updateProfile = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
   User.findByPk(userId)
     .then((loggedinUser) => {
@@ -124,7 +132,7 @@ exports.updateProfile = (req, res, next) => {
 
 exports.changePassword = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
 
   User.findByPk(userId)
@@ -181,7 +189,7 @@ exports.changePassword = (req, res, next) => {
 
 exports.deleteProfile = (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
 
   User.destroy({

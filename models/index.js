@@ -19,15 +19,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.posts = require("./post")(sequelize, Sequelize);
-db.comments = require("./comment")(sequelize, Sequelize);
 db.users = require("./user")(sequelize, Sequelize);
-
-db.posts.hasMany(db.comments, { as: "comments" }); //hasMany() to help one Post have many Comments
-db.comments.belongsTo(db.posts, {
-  //belongsTo() to indicate that one Comment only belongs to one Post
-  foreignKey: "postId",
-  as: "post",
-});
 
 db.users.hasMany(db.posts, {
   as: "posts",

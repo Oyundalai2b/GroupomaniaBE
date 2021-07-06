@@ -7,16 +7,18 @@ const auth = require("./middleware/auth");
 const postRoute = require("./routes/post");
 const userRoute = require("./routes/user");
 
-var corsOptions = {
-  origin: "*",
-};
-
-app.use(cors(corsOptions));
-
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  cors({
+    origin: "*",
+    optionsSuccessStatus: 200,
+  })
+);
+app.options("*", cors()); // include before other routes
 
 const db = require("./models");
 const controller = require("./controllers/post");

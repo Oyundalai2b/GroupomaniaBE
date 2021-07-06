@@ -14,8 +14,8 @@ MYSQL_PASSWORD=pass
 MYSQL_HOST=localhost
 MYSQL_DB=project7
 DB_DIALECT=mysql
-PORT=8080
-
+PORT=3000
+RANDOM_TOKEN_SECRET=your_secret_token
 ```
 
 

@@ -1,14 +1,13 @@
-const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
+dotenv.config();
+
 const app = require("../app");
 const db = require("../models");
 
 const Post = db.posts;
 const User = db.users;
-const Comment = db.comments;
 const Op = db.Sequelize.Op;
 const jwt = require("jsonwebtoken");
-
-// app.use(bodyParser.json());
 
 // Create and Save a new Post
 exports.createPost = (req, res, next) => {
@@ -23,7 +22,7 @@ exports.createPost = (req, res, next) => {
   }
 
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = decodedToken.userId;
 
   const post = new Post({
@@ -46,25 +45,9 @@ exports.createPost = (req, res, next) => {
     });
 };
 
-//Create and Save new Comment
-exports.createComment = (postId, comment) => {
-  return Comment.create({
-    userName: comment.userName,
-    text: comment.text,
-    postId: postId,
-  })
-    .then((comment) => {
-      console.log(">> Created comment: " + JSON.stringify(comment, null, 4));
-      return comment;
-    })
-    .catch((err) => {
-      console.log(">> Error while creating comment: ", err);
-    });
-};
-
 exports.findAllPosts = (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
 
   Post.findAll({ include: [{ model: User, attributes: ["name"], as: "user" }] })
@@ -89,37 +72,12 @@ exports.findAllPosts = (req, res) => {
     });
 };
 
-//retrieve all comments from  a post
-exports.findComments = (req, res) => {
-  const id = req.params.id;
-  Post.findByPk(id, { include: ["comments"] })
-    .then((data) => {
-      if (data === null) {
-        res.status(500).send({
-          message: "Post is not found",
-        });
-      } else {
-        if (data.comments === null) {
-          console.log("doesnt have comments");
-          res.send({
-            message: "Post does not have any comments",
-          });
-        } else {
-          res.send(data.comments);
-        }
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error retrieving Post with id=" + id,
-      });
-    });
-};
-
 // Find a single Post with an id
 exports.findOnePost = (req, res) => {
   const id = req.params.id;
-  Post.findByPk(id)
+  Post.findByPk(id, {
+    include: [{ model: User, attributes: ["name"], as: "user" }],
+  })
     .then((data) => {
       if (data === null) {
         res.status(500).send({
@@ -127,7 +85,7 @@ exports.findOnePost = (req, res) => {
         });
       } else {
         const token = req.headers.authorization.split(" ")[1];
-        const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+        const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
         const userId = parseInt(decodedToken.userId);
 
         if (data.visited == null) {
@@ -159,24 +117,10 @@ exports.findOnePost = (req, res) => {
     });
 };
 
-//Get the comments for a given comment id
-exports.findCommentById = (req, res) => {
-  const id = req.params.id;
-  Comment.findByPk(id, { include: ["post"] })
-    .then((comment) => {
-      res.send(comment);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: ">> Error while finding comment:" + id,
-      });
-    });
-};
-
 exports.update = (req, res, next) => {
   const id = req.params.id;
   const token = req.headers.authorization.split(" ")[1];
-  const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
+  const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
   Post.findByPk(id)
     .then((data) => {
@@ -221,30 +165,6 @@ exports.update = (req, res, next) => {
     });
 };
 
-// Update a Post by the id in the request
-// exports.update = (req, res) => {
-//   const id = req.params.id;
-//   Post.update(req.body.post, {
-//     where: { id: id },
-//   })
-//     .then((num) => {
-//       if (num == 1) {
-//         res.send({
-//           message: "Post was updated successfully.",
-//         });
-//       } else {
-//         res.send({
-//           message: `Cannot update Post with id=${id}. Maybe Post was not found or req.body is empty!`,
-//         });
-//       }
-//     })
-//     .catch((err) => {
-//       res.status(500).send({
-//         message: "Error updating Post with id=" + id,
-//       });
-//     });
-// };
-
 // Delete a Post with the specified id in the request
 exports.deletePost = (req, res) => {
   const id = req.params.id;
@@ -269,27 +189,3 @@ exports.deletePost = (req, res) => {
       });
     });
 };
-
-// exports.isRead = (req, res) => {
-//   const token = req.headers.authorization.split(" ")[1];
-//   const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET");
-//   const userId = decodedToken.userId;
-
-//   const postId = req.params.id;
-//   Post.findByPk(postId)
-//     .then((post) => {
-//       if (post.visited == null) {
-//         res.send({ isRead: false });
-//       } else if (!Object.values(post.visited).includes(userId)) {
-//         res.send({ isRead: false });
-//       } else {
-//         res.send({ isRead: true });
-//       }
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//       res.status(500).send({
-//         message: "Error while finding post:",
-//       });
-//     });
-// };

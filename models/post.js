@@ -1,11 +1,11 @@
 module.exports = (sequelize, Sequelize) => {
   const Post = sequelize.define("post", {
     title: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(300),
       allowNull: false,
     },
     content: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(1000),
       allowNull: false,
     },
     visited: {
@@ -14,7 +14,7 @@ module.exports = (sequelize, Sequelize) => {
       defaultValue: null,
     },
     imgURL: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(500),
       allowNull: true,
       defaultValue: null,
     },

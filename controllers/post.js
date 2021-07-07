@@ -50,7 +50,10 @@ exports.findAllPosts = (req, res) => {
   const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
   const userId = parseInt(decodedToken.userId);
 
-  Post.findAll({ include: [{ model: User, attributes: ["name"], as: "user" }] })
+  Post.findAll({
+    include: [{ model: User, attributes: ["name"], as: "user" }],
+    order: [["createdAt", "DESC"]],
+  })
     .then((posts) => {
       posts.forEach((post) => {
         if (post.visited == null) {

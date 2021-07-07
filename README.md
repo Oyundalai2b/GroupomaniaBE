@@ -7,7 +7,7 @@ Clone this repo, run the following command:
 `npm install`
 
 
-Create `.env` file and create following environment variables:
+Create `.env` file in root folder and create following environment variables:
 ```
 MYSQL_USER=root
 MYSQL_PASSWORD=pass

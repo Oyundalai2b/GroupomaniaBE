@@ -1,15 +1,15 @@
 # GROUPOMANIA API #
 
 ## Installation ##
-Install node.js
-Install MySQL 8.0
-Install MySQL Workbench
+The backend API depends on the following packages.
+- Install NodeJS
+- Install MySQL 8.0
 
-Clone this repo, run the following command:
-`npm install`
+Clone this repo, run the following command to install required Node packages:
 
-
-
+```
+npm install
+```
 
 Create `.env` file in root folder and create following environment variables:
 ```

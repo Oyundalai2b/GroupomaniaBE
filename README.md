@@ -2,9 +2,13 @@
 
 ## Installation ##
 Install node.js
+Install MySQL 8.0
+Install MySQL Workbench
 
 Clone this repo, run the following command:
 `npm install`
+
+
 
 
 Create `.env` file in root folder and create following environment variables:

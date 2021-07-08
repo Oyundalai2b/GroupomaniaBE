@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     bio: {
-      type: DataTypes.STRING, //maybe delete
+      type: DataTypes.STRING,
     },
   });
 
